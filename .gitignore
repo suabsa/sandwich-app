@@ -1,0 +1,8 @@
+.DS_Store
+node_modules
+.dockerignore
+data
+.idea
+backend/server-a/node_modules
+backend/server-b/node_modules
+frontend/sandwich-app/node_modules

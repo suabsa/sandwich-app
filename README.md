@@ -1,0 +1,1 @@
+### Sandwich app implementation as part of learning process using node.js rabitmq, mongodb, react, Docker

@@ -1,0 +1,74 @@
+version: "3"
+services:
+  db:
+    #not good idea to use latest, as it might break when new version comes
+    image: mongo:4.4
+    restart: always
+    networks:
+      - backend
+    #volumes:
+     # - "./data/server-a/db:/data/db"
+
+  react-app:
+    build:
+      context: ./frontend/sandwich-app 
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000  
+    networks:
+     - backend  
+     - frontend
+
+  server-a:
+    build:
+      context: "./backend/server-a"
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - backend  
+      - frontend
+    restart: always
+    environment:
+      - MESSAGE_QUEUE=rabbitmq
+    links:
+      - rabbitmq
+    #volumes:
+    # - "./data/server-a:/usr/src/app/server-a/data:delegated"
+
+  server-b:
+    build:
+      context: "./backend/server-b"
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    links:
+      - rabbitmq
+    depends_on:
+      - rabbitmq
+    environment:
+      - MESSAGE_QUEUE=rabbitmq
+    command: ["./utils/wait-for-it.sh", "rabbitmq:5672","--",  "npm", "start"]
+    #volumes:
+    # - "./data/server-b:/usr/src/app/server-b/data:delegated"
+
+  rabbitmq:
+    image: "rabbitmq:management-alpine"
+    ports:
+      - "15672:15672"
+      - "15671:15671"
+      - "5672:5672"
+    networks:
+      - backend
+    expose:
+      - 5672
+      - 15672
+      - 15671
+    #volumes:
+      # - ./data/rabbitmq:/usr/src/app
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
